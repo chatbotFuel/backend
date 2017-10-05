@@ -1,5 +1,15 @@
 {
   "dependencies": {
+    "express": "^4.16.1",
     "jsonfile": "^4.0.0"
+  },
+  "name": "restaurant",
+  "version": "1.0.0",
+  "main": "app/app.js",
+  "repository": "git@github.com:Mouther/restaurant.git",
+  "author": "Mouther <za7788az@hotmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node app/app.js"
   }
 }
