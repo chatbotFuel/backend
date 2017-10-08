@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "express": "^4.16.1",
-    "jsonfile": "^4.0.0"
+    "jsonfile": "^4.0.0",
+    "mysql": "^2.14.1",
+    "randomstring": "^1.1.5"
   },
   "name": "restaurant",
   "version": "1.0.0",
