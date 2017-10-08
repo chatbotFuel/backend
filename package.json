@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "body-parser": "^1.18.2",
     "express": "^4.16.1",
     "jsonfile": "^4.0.0",
     "mysql": "^2.14.1",
