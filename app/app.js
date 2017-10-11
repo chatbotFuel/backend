@@ -3,6 +3,7 @@ const jsonfile = require("jsonfile")
 const mysql = require("mysql")
 const randomstring = require("randomstring")
 const bodyParser = require('body-parser')
+const cors = require('cors')
 
 const config = jsonfile.readFileSync(__dirname + "/config.json")
 const db     = jsonfile.readFileSync(__dirname + "/db.json")
@@ -16,6 +17,7 @@ let pool = mysql.createPool(db)
 app.use(express.static(__dirname + "/public"))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(cors())
 
 app.get('/chat-redirect', (req, res) => {
   let token = randomstring.generate(randomConfig)
