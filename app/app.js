@@ -21,7 +21,7 @@ app.use(cors())
 
 app.get('/chat-redirect', (req, res) => {
   let token = randomstring.generate(randomConfig)
-  pool.query("INSERT INTO token (token, name, id) VALUES (?, ?, ?)", [token, req.query["last name"] + req.query["first name"], req.query["messenger user id"]], (err, result, field) => {
+  pool.query("INSERT INTO token (token, name, id, restaurant_id) VALUES (?, ?, ?, (SELECT list.id FROM list WHERE list.name = ?))", [token, req.query["last name"] + req.query["first name"], req.query["messenger user id"], req.query["restaurant_name"]], (err, result, field) => {
     if (err) {
       console.log(err)
       return res.send("error")
@@ -52,7 +52,7 @@ app.get('/chat-redirect', (req, res) => {
 app.post('/booking', (req, res) => {
   let token = req.body.token
   pool.query("SELECT * FROM token WHERE token.token = ?", [token], (err, result, field) => {
-    if (result.length == 0) return res.send("Invalid token")
+    if (result.length == 0) return res.send({ok: false, message: "Invalid token"})
     res.send(result)
   })
 })
