@@ -50,15 +50,26 @@ app.get('/chat-redirect', (req, res) => {
 })
 
 app.post('/booking', (req, res) => {
-  let token = req.body.token
-  pool.query("SELECT * FROM token WHERE token.token = ?", [token], (err, result, field) => {
+  pool.query("SELECT * FROM token WHERE token.token = ?", [req.body.tokenid], (err, result, field) => {
     if (result.length == 0) return res.send({ok: false, message: "Invalid token"})
-    res.send(result)
+    if (err) return res.send({ok: false, message: err})
+    var restaurant_id = result[0].restaurant_id
+
+    pool.query("SELECT * FROM book_info INNER JOIN list ON book_info.id = list.id WHERE list.id = ? AND book_info.time = ?", [restaurant_id, req.body.dateTime], (err, result, field) => {
+      if (err) return res.send({ok: false, message: err})
+      if (result.length == 0) return res.send({ok: false, message: "Invalid time"})
+
+      pool.query("INSERT INTO booking (restaurant_id, name, phone, time, number) VALUES (?, ?, ?, ?, ?)", [restaurant_id, req.body.name, req.body.phone, req.body.dateTime, req.body.users], (err, result, field) => {
+        console.log(req.body)
+        if (err) return res.send({ok: false, message: err})
+        res.json({ok: true, result: result})
+      })
+    })
   })
 })
 
 app.get('/get-list', (req, res) => {
-  pool.query("SELECT * FROM list", (err, result, field) => {
+  pool.query("SELECT * FROM booking", (err, result, field) => {
     res.send(result)
   })
 })
