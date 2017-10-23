@@ -72,7 +72,13 @@ app.get('/get-available-time', token_info, (req, res) => {
     WHERE book_info.id = ? \
     GROUP BY book_info.time", [restaurant_id], (err, result, field) => {
       if (err) return res.send({ok: false, message: err})
-      res.send(result.map((i) => { if (!i.sum) i.sum = 0; return i }))
+      res.send(result.map( (i) => { 
+        if (!i.sum) i.sum = 0
+        i.available = i.total - i.sum
+        delete i.sum
+        delete i.total
+        return i
+      }).filter( (i) => i.available > 0 ))
   })
 })
 
