@@ -49,22 +49,30 @@ app.get('/chat-redirect', (req, res) => {
   })
 })
 
-app.post('/booking', (req, res) => {
-  pool.query("SELECT * FROM token WHERE token.token = ?", [req.body.tokenid], (err, result, field) => {
-    if (result.length == 0) return res.send({ok: false, message: "Invalid token"})
+app.post('/booking', token_info, (req, res) => {
+  let restaurant_id = req.token_info.restaurant_id
+
+  pool.query("SELECT * FROM book_info INNER JOIN list ON book_info.id = list.id WHERE list.id = ? AND book_info.time = ?", [restaurant_id, req.body.dateTime], (err, result, field) => {
     if (err) return res.send({ok: false, message: err})
-    var restaurant_id = result[0].restaurant_id
+    if (result.length == 0) return res.send({ok: false, message: "Invalid time"})
 
-    pool.query("SELECT * FROM book_info INNER JOIN list ON book_info.id = list.id WHERE list.id = ? AND book_info.time = ?", [restaurant_id, req.body.dateTime], (err, result, field) => {
+    pool.query("INSERT INTO booking (restaurant_id, name, phone, time, number) VALUES (?, ?, ?, ?, ?)", [restaurant_id, req.body.name, req.body.phone, req.body.dateTime, req.body.users], (err, result, field) => {
+      console.log(req.body)
       if (err) return res.send({ok: false, message: err})
-      if (result.length == 0) return res.send({ok: false, message: "Invalid time"})
-
-      pool.query("INSERT INTO booking (restaurant_id, name, phone, time, number) VALUES (?, ?, ?, ?, ?)", [restaurant_id, req.body.name, req.body.phone, req.body.dateTime, req.body.users], (err, result, field) => {
-        console.log(req.body)
-        if (err) return res.send({ok: false, message: err})
-        res.json({ok: true, result: result})
-      })
+      res.json({ok: true, result: result})
     })
+  })
+})
+
+app.get('/get-available-time', token_info, (req, res) => {
+  let restaurant_id = req.token_info.restaurant_id
+
+  pool.query("SELECT book_info.time time, SUM(booking.number) sum, AVG(book_info.available) total FROM book_info \
+    LEFT JOIN booking ON book_info.id = booking.restaurant_id AND book_info.time = booking.time \
+    WHERE book_info.id = ? \
+    GROUP BY book_info.time", [restaurant_id], (err, result, field) => {
+      if (err) return res.send({ok: false, message: err})
+      res.send(result)
   })
 })
 
@@ -81,4 +89,14 @@ app.get('/get-restaurant-book-info', (req, res) => {
 })
 
 app.listen(config.port || 8080, config.host || 'localhost') 
+
+
+function token_info (req, res, next) {
+  pool.query("SELECT * FROM token WHERE token.token = ?", [req.method == "GET" ? req.query.tokenid : req.body.tokenid], (err, result, field) => {
+    if (result.length == 0) return res.send({ok: false, message: "Invalid token"})
+    if (err) return res.send({ok: false, message: err})
+    req.token_info = result[0]
+    next()
+  })
+}
 
